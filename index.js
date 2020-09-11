@@ -42,7 +42,7 @@ readInterface.on('line', (line) => {
       }
     });
 
-    rawData.push(entry);
+    rawData.push({id: split[0], preis: split[1], entry});
   }
 });
 
@@ -52,8 +52,8 @@ readInterface.on('close', (line) => {
   const maxPrice = Math.max(...prices);
   const priceOffset = minPrice;
   const priceFactor = maxPrice - minPrice;
-  const mappedPreis = prices.map((e) => ({input: e, output: (e - priceOffset) / priceFactor}));
-  // console.log('mappedPreis', mappedPreis);
+  const mappedPrices = prices.reduce((acc, e, index) => ({...acc, [e]: (e - priceOffset) / priceFactor}), {});
+  // console.log('mappedPrices', mappedPrices);
 
   let set;
   const map = {};
@@ -120,29 +120,34 @@ readInterface.on('close', (line) => {
   const mappedData = rawData.map((e) => {
     const entry = {};
     Object.keys(map).forEach((key) => {
-      entry[key] = map[key][e[key]];
+      entry[key] = map[key][e.entry[key]];
     });
-    return entry;
+    return {id: e.id, preis: e.preis, entry};
   });
-  console.log('mappedData', mappedData);
-
-  // var net = new brain.NeuralNetwork();
-  // console.log('Training...');
-  // net.train(data, {
-  //   // Defaults values --> expected validation
-  //   iterations: 200, // the maximum times to iterate the training data --> number greater than 0
-  //   errorThresh: 0.005, // the acceptable error percentage from training data --> number between 0 and 1
-  //   log: true, // true to use console.log, when a function is supplied it is used --> Either true or a function
-  //   logPeriod: 10, // iterations between logging out --> number greater than 0
-  //   learningRate: 0.3, // scales with delta to effect training rate --> number between 0 and 1
-  //   momentum: 0.1, // scales with next layer's change value --> number between 0 and 1
-  //   callback: null, // a periodic call back that can be triggered while training --> null or function
-  //   callbackPeriod: 10, // the number of iterations through the training data between callback calls --> number greater than 0
-  //   timeout: 30 * 1000 // the max number of milliseconds to train for --> number greater than 0
-  // });
-  // console.log('Finished training!');
+  // console.log('mappedData', mappedData);
+  const trainingData = mappedData.map((e) => ({input: Object.values(e.entry), output: [mappedPrices[e.preis]]}));
+  // console.log('trainingData', trainingData);
 
 
+  var net = new brain.NeuralNetwork();
+  console.log('Training...');
+  console.time('Finished training!');
+  net.train(trainingData, {
+    // Defaults values --> expected validation
+    iterations: 20000, // the maximum times to iterate the training data --> number greater than 0
+    errorThresh: 0.005, // the acceptable error percentage from training data --> number between 0 and 1
+    log: false, // true to use console.log, when a function is supplied it is used --> Either true or a function
+    logPeriod: 10, // iterations between logging out --> number greater than 0
+    learningRate: 0.3, // scales with delta to effect training rate --> number between 0 and 1
+    momentum: 0.1, // scales with next layer's change value --> number between 0 and 1
+    callback: null, // a periodic call back that can be triggered while training --> null or function
+    callbackPeriod: 10, // the number of iterations through the training data between callback calls --> number greater than 0
+    timeout: 30 * 1000 // the max number of milliseconds to train for --> number greater than 0
+  });
+  console.timeEnd('Finished training!');
+
+  const result01 = net.run([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+  console.log('result01', result01);
 });
 
 //
