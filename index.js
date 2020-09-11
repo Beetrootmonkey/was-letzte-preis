@@ -60,66 +60,71 @@ readInterface.on('close', (line) => {
 
   set = data['marke'].reduce((acc, e) => acc.add(e.input), new Set());
   map['marke'] = Array.from(set).reduce((acc, e, index) => ({...acc, [e]: index / (set.size - 1)}), {});
-  console.log('marke]', map['marke']);
+  // console.log('marke]', map['marke']);
 
   set = data['model'].reduce((acc, e) => acc.add(e.input), new Set());
   map['model'] = Array.from(set).reduce((acc, e, index) => ({...acc, [e]: index / (set.size - 1)}), {});
-  console.log('model', map['model']);
+  // console.log('model', map['model']);
 
   set = data['bauform'].reduce((acc, e) => acc.add(e.input), new Set());
-  const mappedBauform = Array.from(set).map((e, index) => ({input: e, output: index / (set.size - 1)}));
-  // console.log('mappedBauform', mappedBauform);
+  map['bauform'] = Array.from(set).reduce((acc, e, index) => ({...acc, [e]: index / (set.size - 1)}), {});
+  // console.log('bauform', map['bauform']);
 
   set = data['kraftstoff'].reduce((acc, e) => acc.add(e.input), new Set());
-  const mappedKraftstoff = Array.from(set).map((e, index) => ({input: e, output: index / (set.size - 1)}));
-  // console.log('mappedKraftstoff', mappedKraftstoff);
+  map['kraftstoff'] = Array.from(set).reduce((acc, e, index) => ({...acc, [e]: index / (set.size - 1)}), {});
+  // console.log('kraftstoff', map['kraftstoff']);
 
   set = data['getriebe'].reduce((acc, e) => acc.add(e.input), new Set());
-  const mappedGetriebe = Array.from(set).map((e, index) => ({input: e, output: index / (set.size - 1)}));
-  // console.log('mappedGetriebe', mappedKraftstoff);
+  map['getriebe'] = Array.from(set).reduce((acc, e, index) => ({...acc, [e]: index / (set.size - 1)}), {});
+  // console.log('getriebe', map['getriebe']);
 
   const psData = data['ps'].map((e) => parseInt(e.input, 10));
   const minPs = Math.min(...psData);
   const maxPs = Math.max(...psData);
   const psOffset = minPs;
   const psFactor = maxPs - minPs;
-  const mappedPs = psData.map((e) => ({input: e, output: (e - psOffset) / psFactor}));
-  // console.log('mappedPs', mappedPs);
+  map['ps'] = psData.reduce((acc, e, index) => ({...acc, [e]: (e - psOffset) / psFactor}), {});
+  // console.log('ps', map['ps']);
 
   const kmData = data['kilometerstand'].map((e) => parseInt(e.input, 10));
   const minKm = Math.min(...kmData);
   const maxKm = Math.max(...kmData);
   const kmOffset = minKm;
   const kmFactor = maxKm - minKm;
-  const mappedKm = kmData.map((e) => ({input: e, output: (e - kmOffset) / kmFactor}));
-  // console.log('mappedKm', mappedKm);
+  map['kilometerstand'] = kmData.reduce((acc, e, index) => ({...acc, [e]: (e - kmOffset) / kmFactor}), {});
+  // console.log('kilometerstand', map['kilometerstand']);
 
   const ezData = data['erstzulassung'].map((e) => new Date(e.input).getTime());
   const minEz = Math.min(...ezData);
   const maxEz = Math.max(...ezData);
   const ezOffset = minEz;
   const ezFactor = maxEz - minEz;
-  const mappedEz = ezData.map((e) => ({input: e, output: (e - ezOffset) / ezFactor}));
-  // console.log('mappedEz', mappedEz);
+  map['erstzulassung'] = ezData.reduce((acc, e, index) => ({...acc, [e]: (e - ezOffset) / ezFactor}), {});
+  // console.log('erstzulassung', map['erstzulassung']);
 
   set = data['gebiet'].reduce((acc, e) => acc.add(e.input), new Set());
-  const mappedGebiet = Array.from(set).map((e, index) => ({input: e, output: index / (set.size - 1)}));
-  // console.log('mappedGebiet', mappedGebiet);
+  map['gebiet'] = Array.from(set).reduce((acc, e, index) => ({...acc, [e]: index / (set.size - 1)}), {});
+  // console.log('gebiet', map['gebiet']);
 
   const vdData = data['verkaufsdatum'].map((e) => new Date(e.input).getTime());
   const minVd = Math.min(...vdData);
   const maxVd = Math.max(...vdData);
   const vdOffset = minVd;
   const vdFactor = maxVd - minVd;
-  const mappedVd = vdData.map((e) => ({input: e, output: (e - vdOffset) / vdFactor}));
-  // console.log('mappedVd', mappedVd);
+  map['verkaufsdatum'] = vdData.reduce((acc, e, index) => ({...acc, [e]: (e - vdOffset) / vdFactor}), {});
+  // console.log('verkaufsdatum', map['verkaufsdatum']);
 
   // console.log('rawData', rawData);
-  // console.log('mappedMarke', mappedMarke);
-  // const mappedData = rawData.map((e) => {
-  //   marke: getMappedMarke(marke)
-  // });
-  // console.log('mappedData', mappedData);
+  // console.log('marke', map['marke']);
+  // console.log('marke', map['marke']['audi']);
+  const mappedData = rawData.map((e) => {
+    const entry = {};
+    Object.keys(map).forEach((key) => {
+      entry[key] = map[key][e[key]];
+    });
+    return entry;
+  });
+  console.log('mappedData', mappedData);
 
   // var net = new brain.NeuralNetwork();
   // console.log('Training...');
