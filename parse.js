@@ -172,6 +172,8 @@ readInterface.on('close', (line) => {
     return {id: e.id, preis: e.preis, entry};
   };
 
+  // TODO: Umbauen, weil geht nicht
+
   const mappedData = rawData.map((e) => mapEntry(e));
   // console.log('mappedData', mappedData);
   const trainingData = mappedData.map((e) => ({
