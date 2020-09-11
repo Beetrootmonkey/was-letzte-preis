@@ -2,16 +2,24 @@
   "name": "hackathon2020",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "train.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node --max-old-space-size=8192 index.js",
+    "start": "node --max-old-space-size=8192 train.js",
+    "start-server": "node ./bin/www",
     "parse": "node --max-old-space-size=8192 parse.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "brain.js": "^2.0.0-beta.2"
+    "brain.js": "^2.0.0-beta.2",
+    "cookie-parser": "~1.4.4",
+    "debug": "~2.6.9",
+    "express": "~4.16.1",
+    "http-errors": "~1.6.3",
+    "morgan": "~1.9.1",
+    "node-sass-middleware": "0.11.0",
+    "pug": "2.0.0-beta11"
   }
 }
