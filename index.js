@@ -23,7 +23,8 @@ columns.slice(2).forEach((c) => {
   data[c] = [];
 });
 let lineCount = 0;
-console.log('Starting');
+console.log('Starting...');
+console.time('Finished!');
 readInterface.on('line', (line) => {
   lineCount++;
   if (lineCount === 1) {
@@ -237,6 +238,7 @@ readInterface.on('close', (line) => {
     // console.log(id, preis);
     writeStream.write(id + ' ' + preis + '\n');
   });
+  console.timeEnd('Finished!');
 });
 
 //
@@ -244,47 +246,6 @@ writeStream.write('df5139dd7f9cc68f544c58782c8b8f037afb5fb0f9ffc2c23110846e1ed1e
 // // writeStream.write('4b9c472869462dd1f155a002860b963f689699f8a1afe965131ea2392441c60d' + '\n');
 // // writeStream.write('016dc8cd9f1092dfc9d7081c6bcc06d2aa89e7a380b8531130d6a79b990c8645' + '\n');
 writeStream.write('Ingolais krasse Abgabe' + '\n');
-//
-// readInterface.on('line', (line) => {
-//   const split = line.split(',');
-//   if (split[1] === '') {
-//     const entry = {id: split[0], input: split.slice(2)};
-//     missing.push(entry);
-//     // console.log('Reading', split[0]);
-//   } else {
-//     const price = parseInt(split[1], 10);
-//     const entry = {input: split.slice(2).join(','), output: [price]};
-//     data.push(entry);
-//     // console.log('Reading', split[0], price);
-//   }
-// });
-//
-// readInterface.on('close', (line) => {
-//   console.log('Data', data.length);
-//   console.log('Missing', missing.length);
-//   var net = new brain.NeuralNetwork();
-//   console.log('Training...');
-//   net.train(data, {
-//     // Defaults values --> expected validation
-//     iterations: 200, // the maximum times to iterate the training data --> number greater than 0
-//     errorThresh: 0.005, // the acceptable error percentage from training data --> number between 0 and 1
-//     log: true, // true to use console.log, when a function is supplied it is used --> Either true or a function
-//     logPeriod: 10, // iterations between logging out --> number greater than 0
-//     learningRate: 0.3, // scales with delta to effect training rate --> number between 0 and 1
-//     momentum: 0.1, // scales with next layer's change value --> number between 0 and 1
-//     callback: null, // a periodic call back that can be triggered while training --> null or function
-//     callbackPeriod: 10, // the number of iterations through the training data between callback calls --> number greater than 0
-//     timeout: 30 * 1000, // the max number of milliseconds to train for --> number greater than 0
-//   });
-//   console.log('Finished training!');
-//   missing.forEach((e) => {
-//     console.log('Calculating', e.id);
-//     const output = net.run(e.input);
-//     console.log(e.input, output);
-//     writeStream.write(e.id + ' ' + output + '\n');
-//   });
-// });
-
 
 
 
