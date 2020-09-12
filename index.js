@@ -35,6 +35,7 @@ readInterface.on('line', (line) => {
   let preis;
   if (split[1] !== '') {
     preis = parseInt(split[1], 10);
+    if (preis < 500 || preis > 40000) return;
     prices.push(preis);
     if (min['preis'] == null || preis < min['preis']) {
       min['preis'] = preis;
@@ -45,17 +46,27 @@ readInterface.on('line', (line) => {
   }
 
   columns.slice(2).forEach((c, index) => {
-    data[c].push({input: split[index + 2], output: split[1]});
-    if (c === 'ps' || c === 'kilometerstand') {
+    if (entry[c] === '') return;
+    if (c === 'ps' || c === 'kilometerstand' || c === 'erstzulassung') {
       entry[c] = parseInt(split[index + 2], 10);
-    } else if (c === 'erstzulassung' || c === 'verkaufsdatum') {
+      if (c === 'ps' && (entry[c] < 50 || entry[c] > 300) && preis != null) return;
+      if (c === 'erstzulassung' && (entry[c] < 1990 || entry[c] > 2018) && preis != null) return;
+    } else if (c === 'verkaufsdatum') {
       entry[c] = new Date(split[index + 2]).getTime();
+      if (new Date(entry[c]) < new Date('1980-01-01') && preis != null) return;
+      if (new Date(entry[c]) > new Date('2020-01-01') && preis != null) return;
     } else {
       entry[c] = split[index + 2];
     }
-    if (min[c] == null || entry[c] < min[c]) {
-      min[c] = entry[c];
+    if (preis != null) {
+      if (min[c] == null || entry[c] < min[c]) {
+        min[c] = entry[c];
+      }
+      if (max[c] == null || entry[c] > max[c]) {
+        max[c] = entry[c];
+      }
     }
+    data[c].push({input: split[index + 2], output: split[1]});
   });
 
   if (preis == null) {
@@ -67,6 +78,11 @@ readInterface.on('line', (line) => {
 });
 
 readInterface.on('close', (line) => {
+
+  // console.log('min', min);
+  // console.log('max', max);
+  // return;
+
   // console.log('data', data);
   console.log('Starting Mapping...');
   console.time('Finished Mapping');
@@ -119,7 +135,6 @@ readInterface.on('close', (line) => {
 
   console.log('Mapping PS...');
   console.time('Mapped PS');
-  const psData = data['ps'].map((e) => parseInt(e.input, 10));
   const psOffset = min['ps'];
   const psFactor = max['ps'] - min['ps'];
   // console.log('ps', map['ps']);
@@ -127,7 +142,6 @@ readInterface.on('close', (line) => {
 
   console.log('Mapping Kilometerstand...');
   console.time('Mapped Kilometerstand');
-  const kmData = data['kilometerstand'].map((e) => parseInt(e.input, 10));
   const kmOffset = min['kilometerstand'];
   const kmFactor = max['kilometerstand'] - min['kilometerstand'];
   // console.log('kilometerstand', map['kilometerstand']);
@@ -135,7 +149,6 @@ readInterface.on('close', (line) => {
 
   console.log('Mapping Erstzulassung...');
   console.time('Mapped Erstzulassung');
-  const ezData = data['erstzulassung'].map((e) => new Date(e.input).getTime());
   const ezOffset = min['erstzulassung'];
   const ezFactor = max['erstzulassung'] - min['erstzulassung'];
   // console.log('erstzulassung', map['erstzulassung']);
@@ -150,7 +163,6 @@ readInterface.on('close', (line) => {
 
   console.log('Mapping Verkaufsdatum...');
   console.time('Mapped Verkaufsdatum');
-  const vdData = data['verkaufsdatum'].map((e) => new Date(e.input).getTime());
   const vdOffset = min['verkaufsdatum'];
   const vdFactor = max['verkaufsdatum'] - min['verkaufsdatum'];
   // console.log('verkaufsdatum', map['verkaufsdatum']);
@@ -187,12 +199,13 @@ readInterface.on('close', (line) => {
   console.timeEnd('Finished Mapping');
 
   const netOptions = {
-    hiddenLayers: [3],
+    activation: 'sigmoid', // activation function
+    hiddenLayers: [20],
   };
 
   const trainingOptions = {
     // Defaults values --> expected validation
-    iterations: 20000, // the maximum times to iterate the training data --> number greater than 0
+    iterations: 2000, // the maximum times to iterate the training data --> number greater than 0
     errorThresh: 0.005, // the acceptable error percentage from training data --> number between 0 and 1
     log: true, // true to use console.log, when a function is supplied it is used --> Either true or a function
     logPeriod: 10, // iterations between logging out --> number greater than 0
@@ -200,7 +213,7 @@ readInterface.on('close', (line) => {
     momentum: 0.1, // scales with next layer's change value --> number between 0 and 1
     callback: null, // a periodic call back that can be triggered while training --> null or function
     callbackPeriod: 10, // the number of iterations through the training data between callback calls --> number greater than 0
-    timeout: Infinity // the max number of milliseconds to train for --> number greater than 0
+    timeout: 60 * 1000 // the max number of milliseconds to train for --> number greater than 0
   };
 
   // var net = new brain.NeuralNetwork();
